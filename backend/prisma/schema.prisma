@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  phone          String?
+  role           Role     @default(STUDENT)
+  isVerified     Boolean  @default(false)
+  profilePicture String?
+  googleId       String?  @unique // for Google OAuth users
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  properties       Property[]       @relation("LandlordProperties")
+  sentMessages     Message[]        @relation("SenderMessages")
+  receivedMessages Message[]        @relation("ReceiverMessages")
+  reviews          Review[]
+  savedProperties  SavedProperty[]
+  viewingRequests  ViewingRequest[] @relation("StudentViewings")
+  flagsSubmitted   AdminFlag[]      @relation("FlaggedBy")
+  flagsReceived    AdminFlag[]      @relation("UserFlags")
+
+  @@map("users")
+}
+
+model Property {
+  id          Int      @id @default(autoincrement())
+  landlord    User     @relation("LandlordProperties", fields: [landlordId], references: [id])
+  landlordId  Int
+  title       String
+  description String?
+  price       Decimal
+  location    String
+  roomType    RoomType
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
+  createdAt   DateTime @default(now())
+
+  availability    Availability[]
+  media           PropertyMedia[]
+  viewingRequests ViewingRequest[]
+  reviews         Review[]
+  savedBy         SavedProperty[]
+  flags           AdminFlag[]
+
+  @@map("properties")
+}
+
+model Availability {
+  id          Int      @id @default(autoincrement())
+  property    Property @relation(fields: [propertyId], references: [id])
+  propertyId  Int
+  date        DateTime
+  isAvailable Boolean  @default(true)
+
+  @@unique([propertyId, date])
+  @@map("availability")
+}
+
+model PropertyMedia {
+  id         Int       @id @default(autoincrement())
+  property   Property  @relation(fields: [propertyId], references: [id])
+  propertyId Int
+  mediaUrl   String
+  mediaType  MediaType @default(IMAGE)
+  createdAt  DateTime  @default(now())
+
+  @@map("property_media")
+}
+
+model Conversation {
+  id           Int       @id @default(autoincrement())
+  studentId    Int
+  landlordId   Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  messages     Message[]
+
+  student      User      @relation("StudentConvo", fields: [studentId], references: [id])
+  landlord     User      @relation("LandlordConvo", fields: [landlordId], references: [id])
+
+  @@unique([studentId, landlordId])
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String
+  createdAt      DateTime  @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+}
+
+
+model ViewingRequest {
+  id            Int           @id @default(autoincrement())
+  student       User          @relation("StudentViewings", fields: [studentId], references: [id])
+  studentId     Int
+  property      Property      @relation(fields: [propertyId], references: [id])
+  propertyId    Int
+  requestedDate DateTime
+  status        ViewingStatus @default(PENDING)
+  message       String?
+  createdAt     DateTime      @default(now())
+
+  @@map("viewing_requests")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  student    User     @relation(fields: [studentId], references: [id])
+  studentId  Int
+  property   Property @relation(fields: [propertyId], references: [id])
+  propertyId Int
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@map("reviews")
+}
+
+model SavedProperty {
+  id         Int      @id @default(autoincrement())
+  student    User     @relation(fields: [studentId], references: [id])
+  studentId  Int
+  property   Property @relation(fields: [propertyId], references: [id])
+  propertyId Int
+  createdAt  DateTime @default(now())
+
+  @@unique([studentId, propertyId])
+  @@map("saved_properties")
+}
+
+model AdminFlag {
+  id          Int       @id @default(autoincrement())
+  flaggedBy   User      @relation("FlaggedBy", fields: [flaggedById], references: [id])
+  flaggedById Int
+  property    Property? @relation(fields: [propertyId], references: [id])
+  propertyId  Int?
+  user        User?     @relation("UserFlags", fields: [userId], references: [id])
+  userId      Int?
+  reason      String
+  resolved    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@map("admin_flags")
+}
+
+enum Role {
+  STUDENT
+  LANDLORD
+  ADMIN
+}
+
+enum RoomType {
+  SINGLE
+  SHARED
+  STUDIO
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum ViewingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
