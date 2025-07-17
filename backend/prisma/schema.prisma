@@ -20,16 +20,15 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  properties       Property[]       @relation("LandlordProperties")
-  sentMessages     Message[]        @relation("SenderMessages")
-  receivedMessages Message[]        @relation("ReceiverMessages")
-  reviews          Review[]
-  savedProperties  SavedProperty[]
-  viewingRequests  ViewingRequest[] @relation("StudentViewings")
-  flagsSubmitted   AdminFlag[]      @relation("FlaggedBy")
-  flagsReceived    AdminFlag[]      @relation("UserFlags")
+  properties          Property[]       @relation("LandlordProperties")
+  sentMessages        Message[]        @relation("SenderMessages")
+  receivedMessages    Message[]        @relation("ReceiverMessages")
+  reviews             Review[]
+  savedProperties     SavedProperty[]
+  viewingRequests     ViewingRequest[] @relation("StudentViewings")
+  adminFlagsSubmitted AdminFlag[]      @relation("FlaggedBy")
+  adminFlagsReceived  AdminFlag[]      @relation("UserFlags")
 
-  // ✅ Add missing relation fields
   studentConversations  Conversation[] @relation("StudentConvo")
   landlordConversations Conversation[] @relation("LandlordConvo")
 
@@ -88,10 +87,8 @@ model Conversation {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  // Messages in the conversation
   messages Message[]
 
-  // Relations to User with matching relation names and custom constraint names
   student  User @relation("StudentConvo", fields: [studentId], references: [id], map: "fk_student_user")
   landlord User @relation("LandlordConvo", fields: [landlordId], references: [id], map: "fk_landlord_user")
 
@@ -105,12 +102,11 @@ model Message {
   receiverId     Int
   content        String
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
-
-  // Bi-directional relations to User
-  sender   User @relation("SenderMessages", fields: [senderId], references: [id], map: "fk_sender_user")
-  receiver User @relation("ReceiverMessages", fields: [receiverId], references: [id], map: "fk_receiver_user")
+  sender       User         @relation("SenderMessages", fields: [senderId], references: [id], map: "fk_sender_user")
+  receiver     User         @relation("ReceiverMessages", fields: [receiverId], references: [id], map: "fk_receiver_user")
 }
 
 model ViewingRequest {
@@ -136,6 +132,7 @@ model Review {
   rating     Int
   comment    String?
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("reviews")
 }
