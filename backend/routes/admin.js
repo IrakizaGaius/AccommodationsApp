@@ -6,8 +6,23 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 /**
- * GET /admin/listings/pending
- * List all properties pending approval
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: Admin management routes
+ */
+
+/**
+ * @swagger
+ * /admin/listings/pending:
+ *   get:
+ *     summary: Get all property listings pending approval
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending properties
  */
 router.get('/admin/listings/pending', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   try {
@@ -22,7 +37,23 @@ router.get('/admin/listings/pending', [authenticateToken, authorizeRoles('admin'
 });
 
 /**
- * PUT /admin/listings/:id/approve
+ * @swagger
+ * /admin/listings/{id}/approve:
+ *   put:
+ *     summary: Approve a specific property listing
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the property to approve
+ *     responses:
+ *       200:
+ *         description: Listing approved successfully
  */
 router.put('/admin/listings/:id/approve', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   const propertyId = parseInt(req.params.id);
@@ -38,7 +69,23 @@ router.put('/admin/listings/:id/approve', [authenticateToken, authorizeRoles('ad
 });
 
 /**
- * PUT /admin/listings/:id/decline
+ * @swagger
+ * /admin/listings/{id}/decline:
+ *   put:
+ *     summary: Decline a specific property listing
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the property to decline
+ *     responses:
+ *       200:
+ *         description: Listing declined successfully
  */
 router.put('/admin/listings/:id/decline', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   const propertyId = parseInt(req.params.id);
@@ -54,8 +101,16 @@ router.put('/admin/listings/:id/decline', [authenticateToken, authorizeRoles('ad
 });
 
 /**
- * GET /admin/users/spam
- * Flagged users (based on reports or moderation)
+ * @swagger
+ * /admin/users/spam:
+ *   get:
+ *     summary: Get a list of flagged (spam) users
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of flagged users
  */
 router.get('/admin/users/spam', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   try {
@@ -70,7 +125,23 @@ router.get('/admin/users/spam', [authenticateToken, authorizeRoles('admin')], as
 });
 
 /**
- * DELETE /admin/users/:id
+ * @swagger
+ * /admin/users/{id}:
+ *   delete:
+ *     summary: Delete a specific user by ID
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user to delete
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
  */
 router.delete('/admin/users/:id', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   const userId = parseInt(req.params.id);
@@ -83,8 +154,16 @@ router.delete('/admin/users/:id', [authenticateToken, authorizeRoles('admin')], 
 });
 
 /**
- * GET /admin/analytics
- * Dashboard data: user count, top properties, messages, bookings etc.
+ * @swagger
+ * /admin/analytics:
+ *   get:
+ *     summary: Get admin dashboard analytics
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Analytics dashboard data
  */
 router.get('/admin/analytics', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   try {

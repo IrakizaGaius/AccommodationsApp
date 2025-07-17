@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const { PrismaClient } = require('@prisma/client');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { swaggerUi, swaggerSpec } = require('./swagger');
 
 const authRoutes = require('./routes/auth');
 const propertyRoutes = require('./routes/properties');
@@ -69,6 +70,8 @@ passport.deserializeUser(async (id, done) => {
     done(err, null);
   }
 });
+// Swagger route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Mount auth routes
 app.use('/auth', authRoutes);
