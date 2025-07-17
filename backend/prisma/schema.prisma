@@ -16,7 +16,7 @@ model User {
   role           Role     @default(STUDENT)
   isVerified     Boolean  @default(false)
   profilePicture String?
-  googleId       String?  @unique // for Google OAuth users
+  googleId       String?  @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -28,6 +28,10 @@ model User {
   viewingRequests  ViewingRequest[] @relation("StudentViewings")
   flagsSubmitted   AdminFlag[]      @relation("FlaggedBy")
   flagsReceived    AdminFlag[]      @relation("UserFlags")
+
+  // ✅ Add missing relation fields
+  studentConversations  Conversation[] @relation("StudentConvo")
+  landlordConversations Conversation[] @relation("LandlordConvo")
 
   @@map("users")
 }
@@ -78,30 +82,36 @@ model PropertyMedia {
 }
 
 model Conversation {
-  id           Int       @id @default(autoincrement())
-  studentId    Int
-  landlordId   Int
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  messages     Message[]
+  id         Int      @id @default(autoincrement())
+  studentId  Int
+  landlordId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  student      User      @relation("StudentConvo", fields: [studentId], references: [id])
-  landlord     User      @relation("LandlordConvo", fields: [landlordId], references: [id])
+  // Messages in the conversation
+  messages Message[]
+
+  // Relations to User with matching relation names and custom constraint names
+  student  User @relation("StudentConvo", fields: [studentId], references: [id], map: "fk_student_user")
+  landlord User @relation("LandlordConvo", fields: [landlordId], references: [id], map: "fk_landlord_user")
 
   @@unique([studentId, landlordId])
 }
 
 model Message {
-  id             Int       @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   conversationId Int
   senderId       Int
+  receiverId     Int
   content        String
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  sender         User         @relation(fields: [senderId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+
+  // Bi-directional relations to User
+  sender   User @relation("SenderMessages", fields: [senderId], references: [id], map: "fk_sender_user")
+  receiver User @relation("ReceiverMessages", fields: [receiverId], references: [id], map: "fk_receiver_user")
 }
-
 
 model ViewingRequest {
   id            Int           @id @default(autoincrement())
