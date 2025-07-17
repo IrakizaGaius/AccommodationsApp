@@ -13,9 +13,6 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Run database migration to ensure schema is up to date
-RUN npx prisma migrate deploy
-
 # Expose the port the app runs on
 EXPOSE 3000
 

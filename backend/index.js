@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 // Passport Google OAuth Strategy
 passport.use(new GoogleStrategy({
