@@ -24,7 +24,7 @@ const prisma = new PrismaClient();
  *       200:
  *         description: List of pending properties
  */
-router.get('/admin/listings/pending', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
+router.get('/listings/pending', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   try {
     const listings = await prisma.property.findMany({
       where: { status: 'PENDING' },
@@ -55,7 +55,7 @@ router.get('/admin/listings/pending', [authenticateToken, authorizeRoles('admin'
  *       200:
  *         description: Listing approved successfully
  */
-router.put('/admin/listings/:id/approve', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
+router.put('/listings/:id/approve', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   const propertyId = parseInt(req.params.id);
   try {
     await prisma.property.update({
@@ -87,7 +87,7 @@ router.put('/admin/listings/:id/approve', [authenticateToken, authorizeRoles('ad
  *       200:
  *         description: Listing declined successfully
  */
-router.put('/admin/listings/:id/decline', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
+router.put('/listings/:id/decline', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   const propertyId = parseInt(req.params.id);
   try {
     await prisma.property.update({
@@ -112,7 +112,7 @@ router.put('/admin/listings/:id/decline', [authenticateToken, authorizeRoles('ad
  *       200:
  *         description: List of flagged users
  */
-router.get('/admin/users/spam', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
+router.get('/users/spam', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   try {
     const spamUsers = await prisma.user.findMany({
       where: { isFlagged: true },
@@ -143,7 +143,7 @@ router.get('/admin/users/spam', [authenticateToken, authorizeRoles('admin')], as
  *       200:
  *         description: User deleted successfully
  */
-router.delete('/admin/users/:id', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
+router.delete('/users/:id', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   const userId = parseInt(req.params.id);
   try {
     await prisma.user.delete({ where: { id: userId } });
@@ -165,7 +165,7 @@ router.delete('/admin/users/:id', [authenticateToken, authorizeRoles('admin')], 
  *       200:
  *         description: Analytics dashboard data
  */
-router.get('/admin/analytics', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
+router.get('/analytics', [authenticateToken, authorizeRoles('admin')], async (req, res) => {
   try {
     const [userCount, propertyCount, bookingCount, messageCount, topListings] = await Promise.all([
       prisma.user.count(),

@@ -13,6 +13,7 @@ const viewingRequestRoutes = require('./routes/requests');
 const reviewRoutes = require('./routes/reviews');
 const savedPropertyRoutes = require('./routes/savedProperties');
 const messageRoutes = require('./routes/messages');
+const adminRoutes = require('./routes/admin');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -85,6 +86,8 @@ app.use('/reviews', reviewRoutes);
 app.use('/saved-properties', savedPropertyRoutes);
 // Mount message routes
 app.use('/chat', messageRoutes);
+// Admin routes
+app.use('/admin', adminRoutes);
 
 
 app.listen(PORT, () => {

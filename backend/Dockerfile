@@ -2,16 +2,19 @@ FROM node:20-bullseye-slim
 
 # Set working directory
 WORKDIR /app
+
 # Install dependencies
 COPY package*.json ./
-# Install only production dependencies
 RUN npm ci
 
-# Now copy the rest of the app
+# Copy the rest of the app
 COPY . .
 
 # Generate Prisma client
 RUN npx prisma generate
+
+# Run database migration to ensure schema is up to date
+RUN npx prisma migrate deploy
 
 # Expose the port the app runs on
 EXPOSE 3000
