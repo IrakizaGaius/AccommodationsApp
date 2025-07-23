@@ -7,7 +7,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=mysql://root:password@mysql_db:3306/accommodations_app
+      - DATABASE_URL=mysql://accommodationuser:accommodation@mysql_db:3306/accommodations_app
       - JWT_SECRET=your_jwt_secret
     depends_on:
       mysql_db:
@@ -16,9 +16,10 @@ services:
       - .:/app
       - ./node_modules:/app/node_modules
     command: sh -c "npx prisma migrate deploy && node index.js"
+    restart: unless-stopped
 
   mysql_db:
-    image: mysql:8
+    image: mysql:8.0
     container_name: mysql_database
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -27,11 +28,13 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 3s
       retries: 5
+    restart: unless-stopped
 
 volumes:
   dbdata:
