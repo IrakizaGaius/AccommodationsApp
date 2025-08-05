@@ -30,6 +30,39 @@ const passwordValidator = body('password')
   .matches(/[!@#$%^&*(),.?":{}|<>]/)
   .withMessage('Password must contain at least one special character');
 
+/**
+ * @swagger
+ * /auth/signup:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - role
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [STUDENT, LANDLORD, ADMIN]
+ *               name:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created. Please verify your email.
+ *       400:
+ *         description: Invalid input or email already in use
+ */
 router.post('/signup', [
   body('email').isEmail().withMessage('Invalid email'),
   passwordValidator,
@@ -59,6 +92,25 @@ router.post('/signup', [
   }
 });
 
+/**
+ * @swagger
+ * /auth/verify:
+ *   get:
+ *     summary: Verify user email
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Verification token sent to user's email
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid or expired verification link
+ */
 router.get('/verify', async (req, res) => {
   try {
     const { token } = req.query;
@@ -76,6 +128,35 @@ router.get('/verify', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login a user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       400:
+ *         description: Invalid credentials or validation error
+ *       403:
+ *         description: Email not verified
+ */
 router.post('/login', [
   body('email').isEmail(),
   body('password').exists(),
@@ -122,6 +203,20 @@ router.post('/login', [
   }
 });
 
+/**
+ * @swagger
+ * /auth/refresh-token:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: New access token issued
+ *       401:
+ *         description: No refresh token provided
+ *       403:
+ *         description: Invalid or expired refresh token
+ */
 // Refresh token route
 router.post('/auth/refresh-token', (req, res) => {
   const refreshToken = req.cookies.refreshToken;
@@ -137,10 +232,32 @@ router.post('/auth/refresh-token', (req, res) => {
 });
 
 // Google OAuth routes
+/**
+ * @swagger
+ * /auth/google:
+ *   get:
+ *     summary: Google OAuth login
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to Google for authentication
+ */
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
+/**
+ * @swagger
+ * /auth/google/callback:
+ *   get:
+ *     summary: Google OAuth callback
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to frontend with tokens
+ *       401:
+ *         description: Google authentication failed
+ */
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/login', session: false }),
   (req, res) => {
@@ -156,6 +273,16 @@ router.get('/google/callback',
 );
 
 // Logout route
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Logged out
+ */
 router.post('/logout', (req, res) => {
   res.clearCookie('refreshToken');
   res.json({ message: 'Logged out' });

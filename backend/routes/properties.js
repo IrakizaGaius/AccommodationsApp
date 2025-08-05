@@ -13,6 +13,43 @@ const handleValidation = (req, res, next) => {
   next();
 };
 
+/**
+ * @swagger
+ * /properties:
+ *   get:
+ *     summary: Search and filter properties
+ *     tags: [Properties]
+ *     parameters:
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Location to search
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *         required: false
+ *         description: Minimum price
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *         required: false
+ *         description: Maximum price
+ *       - in: query
+ *         name: roomType
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Room type
+ *     responses:
+ *       200:
+ *         description: List of properties
+ *       500:
+ *         description: Failed to fetch properties
+ */
 // GET /properties - Search & filter
 router.get('/', [
   query('location').optional().isString(),
@@ -38,6 +75,27 @@ router.get('/', [
   }
 });
 
+/**
+ * @swagger
+ * /properties/{id}:
+ *   get:
+ *     summary: Get property details
+ *     tags: [Properties]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     responses:
+ *       200:
+ *         description: Property details
+ *       404:
+ *         description: Property not found
+ *       500:
+ *         description: Failed to fetch property
+ */
 // GET /properties/:id - Property details
 router.get('/:id', [
   param('id').isInt(),
@@ -59,6 +117,47 @@ router.get('/:id', [
   }
 });
 
+/**
+ * @swagger
+ * /properties:
+ *   post:
+ *     summary: Create a new property (landlord only)
+ *     tags: [Properties]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *               - price
+ *               - roomType
+ *               - location
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               roomType:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Property created
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Failed to create property
+ */
 router.post('/', authenticateToken, authorizeRoles('LANDLORD'), [
   body('title').isString(),
   body('description').isString(),
@@ -87,6 +186,39 @@ router.post('/', authenticateToken, authorizeRoles('LANDLORD'), [
   }
 });
 
+/**
+ * @swagger
+ * /properties/{id}:
+ *   put:
+ *     summary: Update a property (landlord only)
+ *     tags: [Properties]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Property updated
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Unauthorized or property not found
+ *       500:
+ *         description: Failed to update property
+ */
 // PUT /properties/:id - Update property
 router.put('/:id', authenticateToken, authorizeRoles('LANDLORD'), [
   param('id').isInt(),
@@ -108,6 +240,31 @@ router.put('/:id', authenticateToken, authorizeRoles('LANDLORD'), [
   }
 });
 
+/**
+ * @swagger
+ * /properties/{id}:
+ *   delete:
+ *     summary: Delete a property (landlord only)
+ *     tags: [Properties]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     responses:
+ *       200:
+ *         description: Property deleted
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Unauthorized or property not found
+ *       500:
+ *         description: Failed to delete property
+ */
 // DELETE /properties/:id - Delete property
 router.delete('/:id', authenticateToken, authorizeRoles('landlord'), [
   param('id').isInt(),
@@ -126,6 +283,47 @@ router.delete('/:id', authenticateToken, authorizeRoles('landlord'), [
   }
 });
 
+/**
+ * @swagger
+ * /properties/{id}/media:
+ *   post:
+ *     summary: Upload media for a property (landlord only)
+ *     tags: [Properties]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - url
+ *               - type
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 format: uri
+ *               type:
+ *                 type: string
+ *                 enum: [image, video]
+ *     responses:
+ *       201:
+ *         description: Media uploaded
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Failed to upload media
+ */
 // POST /properties/:id/media - Upload images/videos
 router.post('/:id/media', authenticateToken, authorizeRoles('landlord'), [
   param('id').isInt(),
@@ -148,6 +346,25 @@ router.post('/:id/media', authenticateToken, authorizeRoles('landlord'), [
   }
 });
 
+/**
+ * @swagger
+ * /properties/{id}/availability:
+ *   get:
+ *     summary: Get property availability
+ *     tags: [Properties]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     responses:
+ *       200:
+ *         description: List of availability dates
+ *       500:
+ *         description: Failed to fetch availability
+ */
 // GET /properties/:id/availability - View availability
 router.get('/:id/availability', [
   param('id').isInt(),
@@ -163,6 +380,48 @@ router.get('/:id/availability', [
   }
 });
 
+/**
+ * @swagger
+ * /properties/{id}/availability:
+ *   put:
+ *     summary: Update property availability (landlord only)
+ *     tags: [Properties]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: object
+ *               required:
+ *                 - date
+ *                 - isAvailable
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   format: date
+ *                 isAvailable:
+ *                   type: boolean
+ *     responses:
+ *       200:
+ *         description: Availability updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Unauthorized or property not found
+ *       500:
+ *         description: Failed to update availability
+ */
 // PUT /properties/:id/availability - Update availability
 router.put('/:id/availability', authenticateToken, authorizeRoles('landlord'), [
   param('id').isInt(),

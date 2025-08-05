@@ -6,8 +6,31 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 /**
- * POST /saved-properties/:propertyId
- * Bookmark/save a property
+ * @swagger
+ * /saved-properties/{propertyId}:
+ *   post:
+ *     summary: Bookmark/save a property (student only)
+ *     tags: [SavedProperties]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: propertyId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID to save
+ *     responses:
+ *       201:
+ *         description: Property saved
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Property not found
+ *       409:
+ *         description: Property already saved
+ *       500:
+ *         description: Internal server error
  */
 router.post('/:propertyId', authenticateToken, authorizeRoles('student'), async (req, res) => {
   const userId = req.user.id;
@@ -45,6 +68,22 @@ router.post('/:propertyId', authenticateToken, authorizeRoles('student'), async 
 });
 
 /**
+ * @swagger
+ * /saved-properties:
+ *   get:
+ *     summary: List saved properties for the student
+ *     tags: [SavedProperties]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of saved properties
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+/**
  * GET /saved-properties
  * List saved properties for the student
  */
@@ -71,6 +110,31 @@ router.get('/', authenticateToken, authorizeRoles('student'), async (req, res) =
   }
 });
 
+/**
+ * @swagger
+ * /saved-properties/{propertyId}:
+ *   delete:
+ *     summary: Remove bookmark (student only)
+ *     tags: [SavedProperties]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: propertyId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID to remove from saved list
+ *     responses:
+ *       200:
+ *         description: Property removed from saved list
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Saved property not found
+ *       500:
+ *         description: Internal server error
+ */
 /**
  * DELETE /saved-properties/:propertyId
  * Remove bookmark

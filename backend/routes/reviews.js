@@ -7,8 +7,48 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 /**
- * POST /reviews
- * Students leave a review on a property and landlord
+ * @swagger
+ * /reviews:
+ *   post:
+ *     summary: Leave a review on a property and landlord (student only)
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - propertyId
+ *               - landlordId
+ *               - rating
+ *             properties:
+ *               propertyId:
+ *                 type: integer
+ *               landlordId:
+ *                 type: integer
+ *               rating:
+ *                 type: number
+ *                 minimum: 1
+ *                 maximum: 5
+ *               comment:
+ *                 type: string
+ *                 maxLength: 1000
+ *     responses:
+ *       201:
+ *         description: Review submitted
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: You cannot review your own listing
+ *       404:
+ *         description: Property not found
+ *       409:
+ *         description: You already reviewed this property
+ *       500:
+ *         description: Internal server error
  */
 router.post(
   '/',
@@ -62,6 +102,25 @@ router.post(
 );
 
 /**
+ * @swagger
+ * /properties/{id}/reviews:
+ *   get:
+ *     summary: List reviews for a property
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Property ID
+ *     responses:
+ *       200:
+ *         description: List of reviews for the property
+ *       500:
+ *         description: Internal server error
+ */
+/**
  * GET /properties/:id/reviews
  * List reviews for a property
  */
@@ -85,6 +144,25 @@ router.get('/properties/:id/reviews', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /landlords/{id}/reviews:
+ *   get:
+ *     summary: List reviews for a landlord
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Landlord ID
+ *     responses:
+ *       200:
+ *         description: List of reviews for the landlord
+ *       500:
+ *         description: Internal server error
+ */
 /**
  * GET /landlords/:id/reviews
  * List reviews for a landlord

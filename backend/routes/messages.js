@@ -6,8 +6,24 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 /**
- * GET /conversations
- * List all conversations for the logged-in user
+ * @swagger
+ * /chat/conversations:
+ *   get:
+ *     summary: List all conversations for the logged-in user
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of conversations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/conversations', authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -36,8 +52,35 @@ router.get('/conversations', authenticateToken, async (req, res) => {
 });
 
 /**
- * GET /messages?conversationId=123
- * Get messages in a conversation
+ * @swagger
+ * /chat/messages:
+ *   get:
+ *     summary: Get messages in a conversation
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: conversationId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Conversation ID
+ *     responses:
+ *       200:
+ *         description: List of messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       400:
+ *         description: conversationId is required
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access denied
  */
 router.get('/messages', authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -67,9 +110,38 @@ router.get('/messages', authenticateToken, async (req, res) => {
 });
 
 /**
- * POST /messages
- * Send a message in a conversation or start new one
- * { recipientId, content }
+ * @swagger
+ * /chat/messages:
+ *   post:
+ *     summary: Send a message in a conversation or start a new one
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - recipientId
+ *               - content
+ *             properties:
+ *               recipientId:
+ *                 type: string
+ *                 description: User ID of the recipient
+ *               content:
+ *                 type: string
+ *                 description: Message content
+ *     responses:
+ *       201:
+ *         description: Message sent
+ *       400:
+ *         description: Recipient and content required, or invalid recipient/roles
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 router.post('/messages', authenticateToken, async (req, res) => {
   const senderId = req.user.id;

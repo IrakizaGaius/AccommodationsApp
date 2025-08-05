@@ -14,8 +14,39 @@ const handleValidation = (req, res, next) => {
 };
 
 /**
- * POST /viewing-requests
- * Student books a viewing appointment
+ * @swagger
+ * /viewing-requests:
+ *   post:
+ *     summary: Book a viewing appointment (student only)
+ *     tags: [ViewingRequests]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - propertyId
+ *               - scheduledAt
+ *             properties:
+ *               propertyId:
+ *                 type: integer
+ *               scheduledAt:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       201:
+ *         description: Viewing request created
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Property not found
+ *       500:
+ *         description: Failed to create viewing request
  */
 router.post('/', authenticateToken, authorizeRoles('student'), [
   body('propertyId').isInt(),
@@ -43,8 +74,22 @@ router.post('/', authenticateToken, authorizeRoles('student'), [
 });
 
 /**
- * GET /viewing-requests
- * Landlord sees requests for own properties, student sees their bookings
+ * @swagger
+ * /viewing-requests:
+ *   get:
+ *     summary: Get viewing requests (landlord sees requests for own properties, student sees their bookings)
+ *     tags: [ViewingRequests]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of viewing requests
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access denied
+ *       500:
+ *         description: Failed to fetch viewing requests
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -87,8 +132,45 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 /**
- * PUT /viewing-requests/:id
- * Landlord confirms or declines a request
+ * @swagger
+ * /viewing-requests/{id}:
+ *   put:
+ *     summary: Confirm or decline a viewing request (landlord only)
+ *     tags: [ViewingRequests]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Viewing request ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [confirmed, declined]
+ *     responses:
+ *       200:
+ *         description: Viewing request updated
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not authorized to update this request
+ *       404:
+ *         description: Request not found
+ *       500:
+ *         description: Failed to update request
  */
 router.put('/:id', authenticateToken, authorizeRoles('landlord'), [
   param('id').isInt(),
@@ -120,8 +202,31 @@ router.put('/:id', authenticateToken, authorizeRoles('landlord'), [
 });
 
 /**
- * DELETE /viewing-requests/:id
- * Cancel request (by student or landlord)
+ * @swagger
+ * /viewing-requests/{id}:
+ *   delete:
+ *     summary: Cancel a viewing request (by student or landlord)
+ *     tags: [ViewingRequests]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Viewing request ID
+ *     responses:
+ *       200:
+ *         description: Viewing request cancelled
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Not authorized to cancel this request
+ *       404:
+ *         description: Request not found
+ *       500:
+ *         description: Failed to cancel request
  */
 router.delete('/:id', authenticateToken, [
   param('id').isInt(),
